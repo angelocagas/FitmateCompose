@@ -1,5 +1,7 @@
 package com.angelodev.fitmatecompose.screens
 
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -34,18 +36,23 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.angelodev.fitmatecompose.R
+import com.angelodev.fitmatecompose.ui.theme.fitmateBeige
+import com.angelodev.fitmatecompose.ui.theme.fitmateBlack
+import com.angelodev.fitmatecompose.ui.theme.fitmateDarkTeal
+import com.angelodev.fitmatecompose.ui.theme.fitmateGray
+import com.angelodev.fitmatecompose.ui.theme.fitmateLightBlue
+import com.angelodev.fitmatecompose.ui.theme.fitmateWhite
+import java.time.LocalDate
+import java.time.format.TextStyle
+import java.util.Locale
 
-
-val fitmateBeige = Color(0xFFF5F1E9)
-val fitmateDarkTeal = Color(0xFF2E6A6D)
-val fitmateLightBlue = Color(0xFFDDE7F1)
-val fitmateWhite = Color(0xFFFFFFFF)
-val fitmateGray = Color(0xFF808080)
-val fitmateBlack = Color(0xFF000000)
 
 data class FitmateTask(
     val title: String,
@@ -71,13 +78,6 @@ data class FitmateDate(
     val isSelected: Boolean = false
 )
 
-val dates = listOf(
-    FitmateDate("16", "THU", isSelected = true),
-    FitmateDate("17", "FRI"),
-    FitmateDate("18", "SAT"),
-    FitmateDate("19", "SUN"),
-    FitmateDate("20", "MON")
-)
 
 @Composable
 fun HomeScreen() {
@@ -102,7 +102,7 @@ fun HomeScreen() {
                 .padding(16.dp)
         ) {
             Header()
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             DatePicker()
             Spacer(modifier = Modifier.height(24.dp))
             TasksSection("UPCOMING TODAY", upcomingTasks)
@@ -119,19 +119,44 @@ fun Header() {
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = "fitmate", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = fitmateDarkTeal)
+//        Text(text = "fitmate", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = fitmateDarkTeal)
+        Image(
+            painter = painterResource(id = R.drawable.fitmate_logo),
+            contentDescription = "Fitmate Logo",
+            modifier = Modifier.size(120.dp, 80.dp),
+            contentScale = ContentScale.Fit
+        )
         Icon(Icons.Filled.ArrowForward, contentDescription = "Profile", tint = fitmateDarkTeal, modifier = Modifier.size(32.dp))
     }
 }
 
 @Composable
 fun DatePicker() {
+    val today = LocalDate.now()
+    val dates = getNextDates(7)
+
+    val monthYear = today.month.getDisplayName(
+        TextStyle.FULL,
+        Locale.ENGLISH
+    ).uppercase() + " ${today.year}"
+
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(text = "OCTOBER 2025", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = fitmateDarkTeal)
-            Icon(Icons.Filled.KeyboardArrowDown, contentDescription = "Select month", tint = fitmateDarkTeal)
+            Text(
+                text = monthYear, // ✅ Dynamic month & year
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = fitmateDarkTeal
+            )
+            Icon(
+                Icons.Filled.KeyboardArrowDown,
+                contentDescription = "Select month",
+                tint = fitmateDarkTeal
+            )
         }
+
         Spacer(modifier = Modifier.height(16.dp))
+
         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             items(dates) { date ->
                 DateCard(date)
@@ -146,7 +171,9 @@ fun DateCard(date: FitmateDate) {
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (date.isSelected) fitmateDarkTeal else fitmateWhite
-        )
+        ),
+        border = BorderStroke(1.dp, fitmateDarkTeal) ,
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
@@ -192,38 +219,58 @@ fun TasksSection(title: String, tasks: List<FitmateTask>) {
 
 @Composable
 fun TaskCard(task: FitmateTask) {
-    Card(
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = fitmateLightBlue),
-        modifier = Modifier.width(200.dp)
+    Box(modifier = Modifier
+        .width(200.dp)  // Moved here to the Box
+        .padding(start = 8.dp)  // Adds 8.dp left margin/outer space to the card, preserving the left shadow
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text(text = task.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = fitmateBlack)
-            Text(text = task.time, fontSize = 14.sp, color = fitmateDarkTeal)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(text = task.description, fontSize = 14.sp, color = fitmateGray)
-            Spacer(modifier = Modifier.height(16.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(
-                    onClick = { /*TODO*/ },
-                    colors = ButtonDefaults.buttonColors(containerColor = fitmateDarkTeal),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Text("Delete", fontSize = 12.sp)
-                }
-                Button(
-                    onClick = { /*TODO*/ },
-                    colors = ButtonDefaults.buttonColors(containerColor = fitmateWhite, contentColor = fitmateDarkTeal),
-                    shape = RoundedCornerShape(8.dp),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
-                ) {
-                    Text("Edit", fontSize = 12.sp)
+        Card(
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = fitmateLightBlue),
+            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        ) {
+            Column(modifier = Modifier.padding(16.dp)) {
+                Text(text = task.title, fontWeight = FontWeight.Bold, fontSize = 16.sp, color = fitmateBlack)
+                Text(text = task.time, fontSize = 14.sp, color = fitmateDarkTeal)
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(text = task.description, fontSize = 14.sp, color = fitmateGray)
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                        onClick = { /*TODO*/ },
+                        colors = ButtonDefaults.buttonColors(containerColor = fitmateDarkTeal),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text("Delete", fontSize = 12.sp, color = fitmateWhite)
+                    }
+                    Button(
+                        onClick = { /*TODO*/ },
+                        colors = ButtonDefaults.buttonColors(containerColor = fitmateWhite, contentColor = fitmateDarkTeal),
+                        shape = RoundedCornerShape(8.dp),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                    ) {
+                        Text("Edit", fontSize = 12.sp)
+                    }
                 }
             }
         }
     }
 }
+
+fun getNextDates(count: Int = 5): List<FitmateDate> {
+    val today = LocalDate.now()
+
+    return (0 until count).map { index ->
+        val date = today.plusDays(index.toLong())
+        FitmateDate(
+            dayOfMonth = date.dayOfMonth.toString(),
+            dayOfWeek = date.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.ENGLISH)
+                .uppercase(),
+            isSelected = index == 0 // today selected
+        )
+    }
+}
+
 
 
 @Preview(showBackground = true)
