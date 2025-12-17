@@ -6,8 +6,6 @@ import com.angelodev.fitmatecompose.database.AppDatabase
 import com.angelodev.fitmatecompose.database.entities.toModel
 import com.angelodev.fitmatecompose.models.TaskModel
 import com.angelodev.fitmatecompose.models.toEntity
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class TasksRepository @Inject constructor(private val database: AppDatabase) {
@@ -22,10 +20,4 @@ class TasksRepository @Inject constructor(private val database: AppDatabase) {
     }
 
 
-    suspend fun getSize() {
-        withContext(Dispatchers.IO) {
-//            database.tasksDao().getAllTasks().size
-        }
-
-    }
 }

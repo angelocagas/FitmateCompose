@@ -18,11 +18,4 @@ class TasksViewModel @Inject constructor(private val tasksRepository: TasksRepos
             tasksRepository.addTask(task)
         }
     }
-
-    fun getSize() {
-        viewModelScope.launch {
-            tasksRepository.getSize()
-        }
-
-    }
 }

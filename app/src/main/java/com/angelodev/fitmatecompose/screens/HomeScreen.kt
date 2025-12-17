@@ -1,5 +1,6 @@
 package com.angelodev.fitmatecompose.screens
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -32,27 +33,24 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.angelodev.fitmatecompose.R
 import com.angelodev.fitmatecompose.models.TaskModel
@@ -62,7 +60,9 @@ import com.angelodev.fitmatecompose.ui.theme.fitmateDarkTeal
 import com.angelodev.fitmatecompose.ui.theme.fitmateGray
 import com.angelodev.fitmatecompose.ui.theme.fitmateLightBlue
 import com.angelodev.fitmatecompose.ui.theme.fitmateWhite
+import com.angelodev.fitmatecompose.utilities.dialogs.AddTaskDialog
 import com.angelodev.fitmatecompose.viewmodels.TasksViewModel
+import timber.log.Timber
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
@@ -106,7 +106,9 @@ data class FitmateDate(
 
 
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    viewModel: TasksViewModel = hiltViewModel()
+) {
 
     var showDialog by remember { mutableStateOf(false) }
 
@@ -151,189 +153,6 @@ fun HomeScreen() {
     }
 }
 
-@Composable
-fun AddTaskDialog(onDismiss: () -> Unit) {
-    var taskTitle by remember { mutableStateOf("") }
-    var selectedHour by remember { mutableStateOf(6) }
-    var selectedMinute by remember { mutableStateOf(28) }
-    var selectedPeriod by remember { mutableStateOf("PM") }
-
-    Dialog(onDismissRequest = onDismiss) {
-        Card(
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = fitmateWhite),
-            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp),
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "ADD NEW TASK",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = fitmateBlack,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // To do field
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "To do *",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = fitmateBlack
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = taskTitle,
-                        onValueChange = { taskTitle = it },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(55.dp),
-                        shape = RoundedCornerShape(16.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = fitmateDarkTeal,
-                            unfocusedBorderColor = fitmateGray,
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent
-                        )
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Set Date and Time section
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = "Set Date and Time",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = fitmateBlack
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    OutlinedTextField(
-                        value = "Set Date",
-                        onValueChange = { },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(55.dp),
-                        readOnly = true,
-                        trailingIcon = {
-                            Icon(
-                                Icons.Filled.KeyboardArrowDown,
-                                contentDescription = "Select Date",
-                                tint = fitmateDarkTeal
-                            )
-                        },
-                        shape = RoundedCornerShape(16.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = fitmateDarkTeal,
-                            unfocusedBorderColor = fitmateGray,
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent
-                        )
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Time Picker
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Hour
-                    Text(
-                        text = String.format("%02d", selectedHour),
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = fitmateBlack
-                    )
-
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(":", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = fitmateBlack)
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    // Minute
-                    Text(
-                        text = String.format("%02d", selectedMinute),
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = fitmateBlack
-                    )
-
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(":", fontSize = 32.sp, fontWeight = FontWeight.Bold, color = fitmateBlack)
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    // AM/PM
-                    Text(
-                        text = selectedPeriod,
-                        fontSize = 32.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = fitmateBlack
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                // Buttons
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Button(
-                        onClick = onDismiss,
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(50.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = fitmateDarkTeal
-                        ),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = "Cancel",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = fitmateWhite
-                        )
-                    }
-
-                    Button(
-                        onClick = {
-                            // TODO: Save task
-                            onDismiss()
-                        },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(50.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = fitmateWhite,
-                            contentColor = fitmateDarkTeal
-                        ),
-                        border = BorderStroke(2.dp, fitmateDarkTeal),
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Text(
-                            text = "Save",
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = fitmateDarkTeal
-                        )
-                    }
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun Header(viewModel: TasksViewModel = hiltViewModel()) {
@@ -362,7 +181,6 @@ fun Header(viewModel: TasksViewModel = hiltViewModel()) {
                         date = "December 11, 2025",
                         time = "3:00 PM"
                     )
-                    viewModel.addTask(task)
                 }
         )
     }
