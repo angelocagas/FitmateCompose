@@ -111,6 +111,11 @@ fun HomeScreen(
 ) {
 
     var showDialog by remember { mutableStateOf(false) }
+    val tasks by viewModel.tasksList.observeAsState(emptyList())
+
+    LaunchedEffect(tasks) {
+        val a = tasks
+    }
 
     Scaffold(
         floatingActionButton = {
